@@ -1,0 +1,12 @@
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="scoreboard.gabeotron.com.scoreboard.MainActivity">
+
+        <item android:id="@+id/action_filter"
+            android:title="@string/play_filter"
+            android:icon="@drawable/ic_sort_white"
+            app:showAsAction="ifRoom"
+            android:orderInCategory="1"/>
+</menu>
