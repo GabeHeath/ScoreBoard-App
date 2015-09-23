@@ -1,6 +1,9 @@
 package scoreboard.gabeotron.com.scoreboard;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
+import android.graphics.Interpolator;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -12,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +28,9 @@ import android.os.Message;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import fr.castorflex.android.circularprogressbar.CircularProgressBar;
+
 
 /**
  * Created by gabeheath on 9/19/15.
@@ -40,6 +47,7 @@ public class BGGSearchActivity extends AppCompatActivity {
     NavigationView mNavigationView;
 
     EditText mEditText;
+    private CircularProgressBar mCirProgBar;
 
     private String url = "http://www.boardgamegeek.com/xmlapi2/search?type=boardgame&query=";
     private HandleXML obj;
@@ -47,6 +55,7 @@ public class BGGSearchActivity extends AppCompatActivity {
     ArrayList<String> al1 = new ArrayList<String>();
     ArrayList<String> al2 = new ArrayList<String>();
     ArrayList<String> al3 = new ArrayList<String>();
+    ArrayList<String> al4 = new ArrayList<String>();//Thumbnails
 
     Integer minInput = 3; //Minimum number of characters to perform (non exact match) game search
 
@@ -60,15 +69,12 @@ public class BGGSearchActivity extends AppCompatActivity {
 
         setContentView(R.layout.bgg_game_search_activity);
 
-        al1.add("120605");
-        al2.add("Coup");
-        al3.add("2012");
-
         mToolbar = (Toolbar) findViewById(R.id.bgg_game_search_app_bar);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.bgg_game_search_drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.bgg_game_search_navigation_drawer);
         mCollapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.bgg_game_search_collapsing_toolbar_layout);
         mCoordinator = (CoordinatorLayout) findViewById(R.id.bgg_game_search_root_coordinator);
+        mCirProgBar = (CircularProgressBar) findViewById(R.id.circ_prog_bar);
 
         mEditText = (EditText) findViewById(R.id.bgg_game_search_field);
 
@@ -95,9 +101,8 @@ public class BGGSearchActivity extends AppCompatActivity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerToggle.syncState();
 
-        // mBGGGameAdapter = new BGGGameAdapter(this, getData());
-        mBGGGameAdapter = new BGGGameAdapter(this, getData(al1, al2, al3));
-        //mBGGGameAdapter = new BGGGameAdapter(this, getData(obj.getGameId(), obj.getGameName(), obj.getGameYearPublished()));
+
+        mBGGGameAdapter = new BGGGameAdapter(this, getData(al1, al2, al3, al4));
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_bgg_game);
         mRecyclerView.setAdapter(mBGGGameAdapter);
@@ -127,7 +132,11 @@ public class BGGSearchActivity extends AppCompatActivity {
 
     }
 
-    public static List<BGGGameData> getData(ArrayList<String> id, ArrayList<String> name, ArrayList<String> year) {
+    public static List<BGGGameData> getData(
+            ArrayList<String> id,
+            ArrayList<String> name,
+            ArrayList<String> year,
+            ArrayList<String> thumbnailUrl) {
 
         List<BGGGameData> data = new ArrayList<>();
 
@@ -136,6 +145,17 @@ public class BGGSearchActivity extends AppCompatActivity {
             current.gameId = id.get(i);
             current.name = name.get(i);
             current.yearPublished = year.get(i);
+
+           // Log.d("lllllllooogg","value: "+thumbnailUrl+" Position: " + i);
+
+            //Should only be 1 thumbnail
+            if(thumbnailUrl == null) {
+                current.thumbnail = null;
+            } else {
+
+                    current.thumbnail = thumbnailUrl.get(i);
+
+            }
 
             data.add(current);
         }
@@ -171,40 +191,24 @@ public class BGGSearchActivity extends AppCompatActivity {
 
     public void performBGGGameSearch() {
 
-
         Runnable r = new Runnable() {
             @Override
             public void run() {
-
-
                 if (mEditText.getText().toString().length() < minInput) {
-
-//Used to simulate code running for a long time for testing purposes.
-//            long futureTime = System.currentTimeMillis() + 5000;
-//            while (System.currentTimeMillis() < futureTime) {
-//                synchronized (this) {
-//                    try {
-//                        wait(futureTime - System.currentTimeMillis());
-//                    } catch (Exception e) {
-//                    }
-//                }
-//            }
-
 
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-
                             Toast.makeText(getApplicationContext(), getString(R.string.min_search),
                                     Toast.LENGTH_LONG).show();
                         }
                     });
 
                 } else {
-
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
+                            AnimationUtils.fadeDown(mCirProgBar);
                             //Hide Keyboard
                             InputMethodManager inputManager = (InputMethodManager) BGGSearchActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
                             inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
@@ -222,11 +226,22 @@ public class BGGSearchActivity extends AppCompatActivity {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            //convertGameIdsToURLs(obj.getGameId()) --- replace argument 1 below with this
-                            mBGGGameAdapter = new BGGGameAdapter(BGGSearchActivity.this, getData(obj.getGameThumbnailURL(), obj.getGameName(), obj.getGameYearPublished()));
-                            mRecyclerView = (RecyclerView) findViewById(R.id.recycler_bgg_game);
-                            mRecyclerView.setAdapter(mBGGGameAdapter);
-                            mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
+                            if (obj.getGameId().size() == 0) {
+                                AnimationUtils.fadeUp(mCirProgBar);
+                                Toast.makeText(getApplicationContext(), getString(R.string.null_search),
+                                        Toast.LENGTH_LONG).show();
+                            } else {
+
+
+                                //convertGameIdsToURLs(obj.getGameId()) --- replace argument 1 below with this
+                                mBGGGameAdapter = new BGGGameAdapter(BGGSearchActivity.this, getData(obj.getGameId(), obj.getGameName(), obj.getGameYearPublished(), null));
+                                mRecyclerView = (RecyclerView) findViewById(R.id.recycler_bgg_game);
+                                mRecyclerView.setAdapter(mBGGGameAdapter);
+                                mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
+                                AnimationUtils.fadeUp(mCirProgBar);
+
+                                updateThumbnails(obj.getGameId(),obj.getGameName(),obj.getGameYearPublished());
+                            }
                         }
                     });
                 }
@@ -238,23 +253,46 @@ public class BGGSearchActivity extends AppCompatActivity {
         bggSearchThread.start();
     }
 
-    public ArrayList<String> convertGameIdsToURLs(ArrayList<String> ids) {
+    public void updateThumbnails(final ArrayList<String> ids, final ArrayList<String> names, final ArrayList<String> years) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
 
-        ArrayList<String> urls = new ArrayList<String>();
-        String bggApiUrl = "https://www.boardgamegeek.com/xmlapi2/thing?id=";
+                HandleXML obj;
 
-        for (int i = 0; i < 1; i++) {
-            String finalURL = bggApiUrl + ids.get(i);
+                for (int i = 0; i < ids.size(); i++) {
+                    if (i > 1) {
+                        //Have to throttle api hits or BGG will return 503 http status codes
+                        long futureTime = System.currentTimeMillis() + 350;
+                        while (System.currentTimeMillis() < futureTime) {
+                            synchronized (this) {
+                                try {
+                                    wait(futureTime - System.currentTimeMillis());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
 
-            obj = new HandleXML(finalURL);
-            obj.fetchXML("thumbnail");
+                    obj = new HandleXML("http://www.boardgamegeek.com/xmlapi2/thing?id=" + ids.get(i));
+                    obj.fetchXML("thumbnail");
+                    while (obj.parsingComplete) ;
 
-            while (obj.parsingComplete) ;
-            urls.add("http:" + obj.getSoloThumbnail());
-        }
+                    al4.add(obj.getSoloThumbnail());
 
-        return urls;
+                }
+
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mBGGGameAdapter.setThumbnails(getData(ids,names,years,al4));
+                    }
+                });
+            }
+        };
+
+        Thread updateThumbnailThread = new Thread(r);
+        updateThumbnailThread.start();
     }
-
-
 }

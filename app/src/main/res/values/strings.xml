@@ -10,4 +10,5 @@
     <string name="play_filter">Filter</string>
     <string name="play_search">Search</string>
     <string name="min_search">Search word is too short</string>
+    <string name="null_search">Search returned 0 results.</string>
 </resources>

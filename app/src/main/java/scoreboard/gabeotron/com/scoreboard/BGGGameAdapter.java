@@ -1,6 +1,8 @@
 package scoreboard.gabeotron.com.scoreboard;
 
 import android.content.Context;
+import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,9 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -20,10 +24,10 @@ import java.util.List;
  */
 public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHolder> {
 
-    private HandleXML obj;
     private LayoutInflater inflater;
     private int previousPosition = 0;
     List<BGGGameData> data = Collections.emptyList();
+    Handler mHandler = new Handler();
 
 
 
@@ -40,50 +44,60 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
         return holder;
     }
 
+    public void setThumbnails(List<BGGGameData> data) {
+        this.data = data;
+        notifyDataSetChanged();
+    }
+
     @Override
-    public void onBindViewHolder(final MyViewHolder holder, int position) {
+    public void onBindViewHolder(final MyViewHolder holder, final int position) {
+
         final BGGGameData current = data.get(position);
 
         holder.name.setText(current.name);
         holder.year.setText(current.yearPublished);
 
-       // String bggApiUrl = "http://www.boardgamegeek.com/xmlapi2/thing?id=";
-       // String finalURL = bggApiUrl + current.gameId;
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+
+                Log.d("biiiiiiiind","value: "+current.thumbnail+" Position: " + position);
+
+                if (current.thumbnail == null) {
+
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Context context = holder.thumbnail.getContext();
+                            Picasso.with(context).load(R.drawable.ic_default_thumbnail).into(holder.thumbnail);
+                        }
+                    });
 
 
-//        /*
-//        Doesn't work very well. Crashes a lot ond slows scrolling
-//         */
-//        obj = new HandleXML("http://www.boardgamegeek.com/xmlapi2/thing?id=" + current.gameId.toString());
-//        obj.fetchXMLThumbnail();
-//        while (obj.parsingComplete);
-//
-//        if (obj.getSoloThumbnail() == null) {
-//            Context context = holder.icon.getContext();
-//            Picasso.with(context).load(R.drawable.ic_add_white).into(holder.icon);
-//        } else {
-//
-//            Context context = holder.icon.getContext();
-//            Picasso.with(context)
-//                    .load("http:" + obj.getSoloThumbnail().toString())//cf.geekdo-images.com/images/pic791918_t.jpg")
-//                    .placeholder(R.drawable.ic_search_white) // optional
-//                    .error(R.drawable.ic_sort_white)
-//                    .fit().centerCrop()
-//                    .into(holder.icon);
-//        }
+                } else {
 
-          if(current.gameId == null) {
-              Context context = holder.icon.getContext();
-              Picasso.with(context).load(R.drawable.ic_add_white).into(holder.icon);
-          } else {
-              Context context = holder.icon.getContext();
-              Picasso.with(context)
-                    .load("https:" + current.gameId.toString())//cf.geekdo-images.com/images/pic791918_t.jpg")
-                    .placeholder(R.drawable.ic_search_white) // optional
-                    .error(R.drawable.ic_sort_white)
-                    .fit().centerCrop()
-                    .into(holder.icon);
-          }
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Context context = holder.thumbnail.getContext();
+                            Picasso.with(context).setIndicatorsEnabled(true);
+                            Picasso.with(context)
+                                    .load("https:" + current.thumbnail.toString())//cf.geekdo-images.com/images/pic791918_t.jpg")
+                                    .placeholder(R.drawable.ic_default_thumbnail) // optional
+                                    .error(R.drawable.ic_default_thumbnail)
+                                    .fit().centerCrop()
+                                    .into(holder.thumbnail);
+                        }
+                    });
+
+                }
+
+            }
+        };
+
+        Thread bggThumbnailSearchThread = new Thread(r);
+        bggThumbnailSearchThread.start();
 
 
 
@@ -91,6 +105,12 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
 
 
 
+
+
+
+        /**
+         * Animations work but disabled for now.
+         */
 //
 //        if(position > previousPosition) { //Scrolling down
 //            AnimationUtils.animate(holder, true);
@@ -107,9 +127,9 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
         return data.size();
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder {
+    class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView name;
-        ImageView icon;
+        ImageView thumbnail;
         TextView year;
 
 
@@ -117,8 +137,16 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
             super(itemView);
 
             name = (TextView) itemView.findViewById(R.id.recycler_bgg_game_list_name);
-            icon = (ImageView) itemView.findViewById(R.id.recycler_bgg_game_list_icon);
+            thumbnail = (ImageView) itemView.findViewById(R.id.recycler_bgg_game_list_icon);
             year = (TextView) itemView.findViewById(R.id.recycler_bgg_game_list_year);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            //itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.colorAccent));
+            Toast.makeText(itemView.getContext(),"Item clicked: " + data.get(getAdapterPosition()).gameId.toString() ,Toast.LENGTH_SHORT).show();
+
         }
     }
 }

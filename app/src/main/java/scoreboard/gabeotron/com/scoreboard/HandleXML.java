@@ -1,6 +1,7 @@
 package scoreboard.gabeotron.com.scoreboard;
 
-import android.util.Log;
+import android.app.Activity;
+import android.widget.Toast;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -10,9 +11,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by gabeheath on 9/19/15.
@@ -124,26 +124,38 @@ public class HandleXML {
                         text=myParser.getText();
                         break;
                     case XmlPullParser.END_TAG:
-                        if(name.equals("yearpublished")){
-                            idYearPublished = myParser.getAttributeValue(null,"value");
-                        } else if (name.equals("minplayers")) {
-                            idMinPlayers = text;
-                        } else if (name.equals("maxplayers")) {
-                            idMaxPlayers = text;
-                        } else if (name.equals("playtime")) {
-                            idPlayTime = text;
-                        } else if (name.equals("age")) {
-                            idAge = text;
-                        } else if (name.equals("name")) {
-                            //gameName = myParser.getAttributeValue("primary","type");
-                            idName = text;
-                        } else if (name.equals("description")) {
-                            idDescription = text;
-                        } else if (name.equals("thumbnail")) {
-                            idThumbnail = text;
-                        } else if (name.equals("image")) {
-                            idImage = text;
-                        } else{}
+                        switch (name) {
+                            case "yearpublished":
+                                idYearPublished = myParser.getAttributeValue(null, "value");
+                                break;
+                            case "minplayers":
+                                idMinPlayers = text;
+                                break;
+                            case "maxplayers":
+                                idMaxPlayers = text;
+                                break;
+                            case "playtime":
+                                idPlayTime = text;
+                                break;
+                            case "age":
+                                idAge = text;
+                                break;
+                            case "name":
+                                //gameName = myParser.getAttributeValue("primary","type");
+                                idName = text;
+                                break;
+                            case "description":
+                                idDescription = text;
+                                break;
+                            case "thumbnail":
+                                idThumbnail = text;
+                                break;
+                            case "image":
+                                idImage = text;
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                 }
                 event = myParser.next();
@@ -170,38 +182,22 @@ public class HandleXML {
                         if(name.equals("item")){
                             String id = myParser.getAttributeValue(null, "id");
                             gameIdList.add(id);
-
-                            HandleXML obj;
-                            obj = new HandleXML("http://www.boardgamegeek.com/xmlapi2/thing?id=" + id);
-                            obj.fetchXML("thumbnail");
-                            while (obj.parsingComplete);
-                            gameThumbnailURL.add(obj.getSoloThumbnail());
-
-
-                            /**
-                             * I have to throttle the search speed so the BGG Api
-                             * Doesn't throttle and start returning 503 status codes
-                             */
-                            long futureTime = System.currentTimeMillis() + 350;
-                            while (System.currentTimeMillis() < futureTime) {
-                                synchronized (this) {
-                                    try {
-                                        wait(futureTime - System.currentTimeMillis());
-                                    } catch (Exception e) {
-                                    }
-                                }
-                            }
                         }
                         break;
                     case XmlPullParser.TEXT:
                         text=myParser.getText();
                         break;
                     case XmlPullParser.END_TAG:
-                        if (name.equals("name")) {
-                            gameNameList.add(myParser.getAttributeValue(null,"value"));
-                        } else if (name.equals("yearpublished")) {
-                            gameYearPublishedList.add(myParser.getAttributeValue(null,"value"));
-                        } else{}
+                        switch (name) {
+                            case "name":
+                                gameNameList.add(myParser.getAttributeValue(null, "value"));
+                                break;
+                            case "yearpublished":
+                                gameYearPublishedList.add(myParser.getAttributeValue(null, "value"));
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                 }
                 event = myParser.next();
@@ -244,7 +240,7 @@ public class HandleXML {
     }
 
     public void fetchXML(final String searchType) {
-        Thread thread = new Thread(new Runnable() {
+        final Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
 
@@ -258,6 +254,9 @@ public class HandleXML {
                  */
 
                 OkHttpClient client = new OkHttpClient();
+
+                client.setConnectTimeout(15, TimeUnit.SECONDS); // connect timeout
+                client.setReadTimeout(20, TimeUnit.SECONDS);    // socket timeout
 
                 Request request = new Request.Builder()
                         .url(urlString)
@@ -284,9 +283,7 @@ public class HandleXML {
                     }
                     stream.close();
                     response.body().close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (XmlPullParserException e) {
+                } catch (IOException | XmlPullParserException e) {
                     e.printStackTrace();
                 }
 

@@ -1,9 +1,13 @@
 package scoreboard.gabeotron.com.scoreboard;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Toast;
 
 /**
  * Created by gabeheath on 9/20/15.
@@ -41,4 +45,35 @@ public class AnimationUtils {
 
 
     }
+
+    public static void fadeUp(final View view) {
+
+        view.animate()
+                .translationY(-view.getHeight())
+                .alpha(0.0f)
+                .setDuration(300)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        view.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+    public static void fadeDown(final View view) {
+
+        view.animate()
+                .translationY(view.getHeight())
+                .alpha(1.0f)
+                .setDuration(300)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        super.onAnimationStart(animation);
+                        view.setVisibility(View.VISIBLE);
+                    }
+                });
+    }
+
 }

@@ -7,6 +7,7 @@ public class BGGGameData {
     String gameId;
     String name;
     String yearPublished;
+    String thumbnail;
 
 
 }
