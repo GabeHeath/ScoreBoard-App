@@ -44,9 +44,10 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
         return holder;
     }
 
-    public void setThumbnails(List<BGGGameData> data) {
+    public void setThumbnails(List<BGGGameData> data, int position) {
         this.data = data;
-        notifyDataSetChanged();
+        //notifyDataSetChanged();
+        notifyItemChanged(position);
     }
 
     @Override
@@ -61,8 +62,6 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
 
             @Override
             public void run() {
-
-                Log.d("biiiiiiiind","value: "+current.thumbnail+" Position: " + position);
 
                 if (current.thumbnail == null) {
 

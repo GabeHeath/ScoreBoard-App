@@ -146,16 +146,12 @@ public class BGGSearchActivity extends AppCompatActivity {
             current.name = name.get(i);
             current.yearPublished = year.get(i);
 
-           // Log.d("lllllllooogg","value: "+thumbnailUrl+" Position: " + i);
-
-            //Should only be 1 thumbnail
-            if(thumbnailUrl == null) {
+            try{
+                current.thumbnail = thumbnailUrl.get(i);
+            }catch (IndexOutOfBoundsException|NullPointerException e){
                 current.thumbnail = null;
-            } else {
-
-                    current.thumbnail = thumbnailUrl.get(i);
-
             }
+
 
             data.add(current);
         }
@@ -240,7 +236,7 @@ public class BGGSearchActivity extends AppCompatActivity {
                                 mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
                                 AnimationUtils.fadeUp(mCirProgBar);
 
-                                updateThumbnails(obj.getGameId(),obj.getGameName(),obj.getGameYearPublished());
+                                updateThumbnails(obj.getGameId(), obj.getGameName(), obj.getGameYearPublished());
                             }
                         }
                     });
@@ -254,23 +250,22 @@ public class BGGSearchActivity extends AppCompatActivity {
     }
 
     public void updateThumbnails(final ArrayList<String> ids, final ArrayList<String> names, final ArrayList<String> years) {
+        final ArrayList<String> thumbs = new ArrayList<>();
+
         Runnable r = new Runnable() {
             @Override
             public void run() {
-
                 HandleXML obj;
 
                 for (int i = 0; i < ids.size(); i++) {
-                    if (i > 1) {
-                        //Have to throttle api hits or BGG will return 503 http status codes
-                        long futureTime = System.currentTimeMillis() + 350;
-                        while (System.currentTimeMillis() < futureTime) {
-                            synchronized (this) {
-                                try {
-                                    wait(futureTime - System.currentTimeMillis());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                    //Have to throttle api hits or BGG will return 503 http status codes
+                    long futureTime = System.currentTimeMillis() + 350;
+                    while (System.currentTimeMillis() < futureTime) {
+                        synchronized (this) {
+                            try {
+                                wait(futureTime - System.currentTimeMillis());
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
                         }
                     }
@@ -279,16 +274,21 @@ public class BGGSearchActivity extends AppCompatActivity {
                     obj.fetchXML("thumbnail");
                     while (obj.parsingComplete) ;
 
-                    al4.add(obj.getSoloThumbnail());
+                    if(obj.getSoloThumbnail() == null){
+                        thumbs.add("null");
+                    } else {
+                        thumbs.add(obj.getSoloThumbnail());
+                    }
+
+                    final int finalI = i;
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mBGGGameAdapter.setThumbnails(getData(ids, names, years, thumbs), finalI);
+                        }
+                    });
 
                 }
-
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mBGGGameAdapter.setThumbnails(getData(ids,names,years,al4));
-                    }
-                });
             }
         };
 
