@@ -1,6 +1,7 @@
 package scoreboard.gabeotron.com.scoreboard;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +13,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.daimajia.swipe.SwipeLayout;
+import com.daimajia.swipe.adapters.RecyclerSwipeAdapter;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -22,18 +25,20 @@ import java.util.List;
 /**
  * Created by gabeheath on 9/19/15.
  */
-public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHolder> {
+public class BGGGameAdapter extends RecyclerSwipeAdapter<BGGGameAdapter.MyViewHolder> {
 
     private LayoutInflater inflater;
     private int previousPosition = 0;
     List<BGGGameData> data = Collections.emptyList();
     Handler mHandler = new Handler();
+    private Context mContext;
 
 
 
     public BGGGameAdapter (Context context, List<BGGGameData> data) {
         inflater = LayoutInflater.from(context);
         this.data = data;
+        this.mContext = context;
 
     }
 
@@ -57,6 +62,51 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
 
         holder.name.setText(current.name);
         holder.year.setText(current.yearPublished);
+
+        holder.mSwipeLayout.setShowMode(SwipeLayout.ShowMode.PullOut);
+
+        //Drag from Right
+        holder.mSwipeLayout.addSwipeListener(new SwipeLayout.SwipeListener() {
+            @Override
+            public void onStartOpen(SwipeLayout swipeLayout) {
+
+            }
+
+            @Override
+            public void onOpen(SwipeLayout swipeLayout) {
+                //when the BottomView totally shows.
+            }
+
+            @Override
+            public void onStartClose(SwipeLayout swipeLayout) {
+
+            }
+
+            @Override
+            public void onClose(SwipeLayout swipeLayout) {
+                //when the SurfaceView totally cover the BottomView.
+            }
+
+            @Override
+            public void onUpdate(SwipeLayout swipeLayout, int i, int i1) {
+                //You are swiping
+            }
+
+            @Override
+            public void onHandRelease(SwipeLayout swipeLayout, float v, float v1) {
+                //when user's hand released.
+            }
+        });
+
+        holder.mSwipeLayout.getSurfaceView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(mContext, "Game ID: " + current.gameId, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(mContext, GameActivity.class);
+                intent.putExtra("message", current.gameId);
+                mContext.startActivity(intent);
+            }
+        });
 
         Runnable r = new Runnable() {
 
@@ -126,7 +176,13 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
         return data.size();
     }
 
-    class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    @Override
+    public int getSwipeLayoutResourceId(int i) {
+        return R.id.recycler_swipe_layout;
+    }
+
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        SwipeLayout mSwipeLayout;
         TextView name;
         ImageView thumbnail;
         TextView year;
@@ -135,17 +191,10 @@ public class BGGGameAdapter extends RecyclerView.Adapter<BGGGameAdapter.MyViewHo
         public MyViewHolder(View itemView) {
             super(itemView);
 
+            mSwipeLayout = (SwipeLayout) itemView.findViewById(R.id.recycler_swipe_layout);
             name = (TextView) itemView.findViewById(R.id.recycler_bgg_game_list_name);
             thumbnail = (ImageView) itemView.findViewById(R.id.recycler_bgg_game_list_icon);
             year = (TextView) itemView.findViewById(R.id.recycler_bgg_game_list_year);
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            //itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),R.color.colorAccent));
-            Toast.makeText(itemView.getContext(),"Item clicked: " + data.get(getAdapterPosition()).gameId.toString() ,Toast.LENGTH_SHORT).show();
-
         }
     }
 }

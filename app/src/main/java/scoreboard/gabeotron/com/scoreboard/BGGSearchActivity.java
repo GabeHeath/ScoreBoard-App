@@ -26,6 +26,8 @@ import android.widget.Toast;
 import android.os.Handler;
 import android.os.Message;
 
+import com.daimajia.swipe.SwipeLayout;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +47,7 @@ public class BGGSearchActivity extends AppCompatActivity {
     CollapsingToolbarLayout mCollapsingToolbarLayout;
     CoordinatorLayout mCoordinator;
     NavigationView mNavigationView;
+    private SwipeLayout mSwipeLayout;
 
     EditText mEditText;
     private CircularProgressBar mCirProgBar;
@@ -95,11 +98,11 @@ public class BGGSearchActivity extends AppCompatActivity {
         });
 
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-        mDrawerToggle.syncState();
+//        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
+//        mDrawerLayout.setDrawerListener(mDrawerToggle);
+//        mDrawerToggle.syncState();
 
 
         mBGGGameAdapter = new BGGGameAdapter(this, getData(al1, al2, al3, al4));
@@ -128,8 +131,6 @@ public class BGGSearchActivity extends AppCompatActivity {
             }
 
         });
-
-
     }
 
     public static List<BGGGameData> getData(
@@ -172,13 +173,16 @@ public class BGGSearchActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        if (id == R.id.action_bgg_game_search) {
-
-
-            performBGGGameSearch();
-
-
+        Log.d("jjjjjj","jjjjjjjkkkk:"+id);
+        switch (id){
+            case R.id.action_bgg_game_search:
+                performBGGGameSearch();
+                break;
+            case 16908332: //home button
+                Log.d("jjjjjj","jjjjjjj");
+                finish();
+               BGGSearchActivity.this.overridePendingTransition(R.animator.slide2, R.animator.slide );
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -233,6 +237,7 @@ public class BGGSearchActivity extends AppCompatActivity {
                                 mBGGGameAdapter = new BGGGameAdapter(BGGSearchActivity.this, getData(obj.getGameId(), obj.getGameName(), obj.getGameYearPublished(), null));
                                 mRecyclerView = (RecyclerView) findViewById(R.id.recycler_bgg_game);
                                 mRecyclerView.setAdapter(mBGGGameAdapter);
+                                mRecyclerView.getItemAnimator().setSupportsChangeAnimations(false);
                                 mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
                                 AnimationUtils.fadeUp(mCirProgBar);
 

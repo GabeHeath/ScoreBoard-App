@@ -106,7 +106,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 //Notice how the Coordinator Layout object is used here
-                Snackbar.make(mCoordinator, "FAB Clicked", Snackbar.LENGTH_SHORT).setAction("DISMISS", null).show();
+                //Snackbar.make(mCoordinator, "FAB Clicked", Snackbar.LENGTH_SHORT).setAction("DISMISS", null).show();
+                Intent intent = new Intent(MainActivity.this, BGGSearchActivity.class);
+                startActivity(intent);
             }
         });
 
