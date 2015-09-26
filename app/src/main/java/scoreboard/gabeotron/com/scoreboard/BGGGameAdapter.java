@@ -3,22 +3,17 @@ package scoreboard.gabeotron.com.scoreboard;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.daimajia.swipe.SwipeLayout;
 import com.daimajia.swipe.adapters.RecyclerSwipeAdapter;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -102,8 +97,9 @@ public class BGGGameAdapter extends RecyclerSwipeAdapter<BGGGameAdapter.MyViewHo
             @Override
             public void onClick(View v) {
                 //Toast.makeText(mContext, "Game ID: " + current.gameId, Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(mContext, GameActivity.class);
-                intent.putExtra("message", current.gameId);
+                Intent intent = new Intent(mContext, GameInfoActivity.class);
+                intent.putExtra("id", current.gameId);
+                intent.putExtra("name", current.name);
                 mContext.startActivity(intent);
             }
         });

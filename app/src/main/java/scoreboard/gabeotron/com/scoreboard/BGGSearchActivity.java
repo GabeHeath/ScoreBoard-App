@@ -178,10 +178,9 @@ public class BGGSearchActivity extends AppCompatActivity {
             case R.id.action_bgg_game_search:
                 performBGGGameSearch();
                 break;
-            case 16908332: //home button
-                Log.d("jjjjjj","jjjjjjj");
+            case android.R.id.home://16908332: //home button
                 finish();
-               BGGSearchActivity.this.overridePendingTransition(R.animator.slide2, R.animator.slide );
+               BGGSearchActivity.this.overridePendingTransition(R.anim.slide2, R.anim.slide );
                 break;
         }
 

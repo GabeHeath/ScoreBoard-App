@@ -17,4 +17,8 @@
         <item>Friends</item>
     </string-array>
 
+    <style name="HeaderTitle" parent="@android:style/TextAppearance">
+        <item name="android:textSize">@dimen/font_size</item>
+    </style>
+
 </resources>

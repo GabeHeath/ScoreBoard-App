@@ -22,6 +22,7 @@ public class HandleXML {
     /**
      * Id Search Variables
      */
+    private String id;
     private String idYearPublished;
     private String idMinPlayers;
     private String idMaxPlayers;
@@ -31,6 +32,7 @@ public class HandleXML {
     private String idDescription;
     private String idThumbnail;
     private String idImage;
+    private String idAvgRating;
 
     /**
      * Game Search Variables
@@ -48,6 +50,10 @@ public class HandleXML {
 
     private XmlPullParserFactory xmlFactoryObject;
     public volatile boolean parsingComplete=true;
+
+    public String getId() {
+        return id;
+    }
 
     public HandleXML(String url) {
         this.urlString = url;
@@ -89,6 +95,10 @@ public class HandleXML {
         return idImage;
     }
 
+    public String getIdAvgRating() {
+        return idAvgRating;
+    }
+
     public ArrayList<String> getGameId() {
         return gameIdList;
     }
@@ -119,6 +129,9 @@ public class HandleXML {
                 String name=myParser.getName();
                 switch (event){
                     case XmlPullParser.START_TAG:
+                        if(name.equals("item")){
+                            id = myParser.getAttributeValue(null, "id");
+                        }
                         break;
                     case XmlPullParser.TEXT:
                         text=myParser.getText();
@@ -141,8 +154,7 @@ public class HandleXML {
                                 idAge = text;
                                 break;
                             case "name":
-                                //gameName = myParser.getAttributeValue("primary","type");
-                                idName = text;
+                                idName = myParser.getAttributeValue(null, "value");
                                 break;
                             case "description":
                                 idDescription = text;
@@ -152,6 +164,9 @@ public class HandleXML {
                                 break;
                             case "image":
                                 idImage = text;
+                                break;
+                            case "average":
+                                idAvgRating = myParser.getAttributeValue(null, "value");
                                 break;
                             default:
                                 break;
