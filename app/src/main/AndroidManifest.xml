@@ -27,6 +27,8 @@
         <activity
             android:name=".GameInfoActivity"/>
 
+        <activity
+            android:name=".BGGActivity"/>
 
 
     </application>

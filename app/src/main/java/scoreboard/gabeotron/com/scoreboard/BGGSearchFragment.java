@@ -1,11 +1,10 @@
 package scoreboard.gabeotron.com.scoreboard;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
+import android.support.v4.app.Fragment;
 import android.content.Context;
-import android.graphics.Interpolator;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
@@ -17,14 +16,15 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.os.Handler;
-import android.os.Message;
 
 import com.daimajia.swipe.SwipeLayout;
 
@@ -33,13 +33,13 @@ import java.util.List;
 
 import fr.castorflex.android.circularprogressbar.CircularProgressBar;
 
-
 /**
- * Created by gabeheath on 9/19/15.
+ * Created by gabeheath on 9/26/15.
  */
-public class BGGSearchActivity extends AppCompatActivity {
+public class BGGSearchFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private BGGGameAdapter mBGGGameAdapter;
+    private View view;
 
     private Toolbar mToolbar;
     private DrawerLayout mDrawerLayout;
@@ -65,23 +65,21 @@ public class BGGSearchActivity extends AppCompatActivity {
 
     Handler mHandler = new Handler();
 
-
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        view = inflater.inflate(R.layout.bgg_search_fragment, container, false);
+        setHasOptionsMenu(true); //Makes the onCreateOptionsMenu show
 
-        setContentView(R.layout.bgg_game_search_activity);
+        mToolbar = (Toolbar) view.findViewById(R.id.bgg_game_search_app_bar);
+        mDrawerLayout = (DrawerLayout) view.findViewById(R.id.bgg_game_search_drawer_layout);
+        mNavigationView = (NavigationView) view.findViewById(R.id.bgg_game_search_navigation_drawer);
+        mCollapsingToolbarLayout = (CollapsingToolbarLayout) view.findViewById(R.id.bgg_game_search_collapsing_toolbar_layout);
+        mCoordinator = (CoordinatorLayout) view.findViewById(R.id.bgg_game_search_root_coordinator);
+        mCirProgBar = (CircularProgressBar) view.findViewById(R.id.circ_prog_bar);
 
-        mToolbar = (Toolbar) findViewById(R.id.bgg_game_search_app_bar);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.bgg_game_search_drawer_layout);
-        mNavigationView = (NavigationView) findViewById(R.id.bgg_game_search_navigation_drawer);
-        mCollapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.bgg_game_search_collapsing_toolbar_layout);
-        mCoordinator = (CoordinatorLayout) findViewById(R.id.bgg_game_search_root_coordinator);
-        mCirProgBar = (CircularProgressBar) findViewById(R.id.circ_prog_bar);
+        mEditText = (EditText) view.findViewById(R.id.bgg_game_search_field);
 
-        mEditText = (EditText) findViewById(R.id.bgg_game_search_field);
-
-        //This code also exists below when search button is pressed in toolbar
         mEditText.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -89,7 +87,6 @@ public class BGGSearchActivity extends AppCompatActivity {
                 if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
                         (keyCode == KeyEvent.KEYCODE_ENTER)) {
                     // Perform action on key press.
-
                     performBGGGameSearch();
                 }
 
@@ -97,40 +94,32 @@ public class BGGSearchActivity extends AppCompatActivity {
             }
         });
 
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-//        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, mToolbar, R.string.drawer_open, R.string.drawer_close);
-//        mDrawerLayout.setDrawerListener(mDrawerToggle);
-//        mDrawerToggle.syncState();
+        mBGGGameAdapter = new BGGGameAdapter(getActivity(), getData(al1, al2, al3, al4));
 
-
-        mBGGGameAdapter = new BGGGameAdapter(this, getData(al1, al2, al3, al4));
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_bgg_game);
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_bgg_game);
         mRecyclerView.setAdapter(mBGGGameAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
-
-
-        /**
-         * Setup click events on the Navigation View Items.
-         */
-
-        // mFragmentManager = getSupportFragmentManager();
-
+//
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
-                mDrawerLayout.closeDrawers();
+               // mDrawerLayout.closeDrawers();
 
                 if (menuItem.getItemId() == R.id.navigation_item_1) {
-                    finish(); // Ends current activity and goes back to previous one.
+                    getActivity().finish(); // Ends current activity and goes back to previous one.
                 }
 
                 return false;
             }
 
         });
+
+
+
+        return view;
     }
 
     public static List<BGGGameData> getData(
@@ -161,10 +150,10 @@ public class BGGSearchActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_bgg_game_search, menu);
-        return true;
+        inflater.inflate(R.menu.menu_bgg_game_search, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -179,8 +168,8 @@ public class BGGSearchActivity extends AppCompatActivity {
                 performBGGGameSearch();
                 break;
             case android.R.id.home://16908332: //home button
-                finish();
-               BGGSearchActivity.this.overridePendingTransition(R.anim.slide2, R.anim.slide );
+                getActivity().finish();
+                //BGGSearchFragment.this.overridePendingTransition(R.anim.slide2, R.anim.slide );
                 break;
         }
 
@@ -198,7 +187,7 @@ public class BGGSearchActivity extends AppCompatActivity {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getApplicationContext(), getString(R.string.min_search),
+                            Toast.makeText(getActivity(), getString(R.string.min_search),
                                     Toast.LENGTH_LONG).show();
                         }
                     });
@@ -209,8 +198,8 @@ public class BGGSearchActivity extends AppCompatActivity {
                         public void run() {
                             AnimationUtils.fadeDown(mCirProgBar);
                             //Hide Keyboard
-                            InputMethodManager inputManager = (InputMethodManager) BGGSearchActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                            InputMethodManager inputManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            inputManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                         }
                     });
 
@@ -227,14 +216,14 @@ public class BGGSearchActivity extends AppCompatActivity {
                         public void run() {
                             if (obj.getGameId().size() == 0) {
                                 AnimationUtils.fadeUp(mCirProgBar);
-                                Toast.makeText(getApplicationContext(), getString(R.string.null_search),
+                                Toast.makeText(getActivity(), getString(R.string.null_search),
                                         Toast.LENGTH_LONG).show();
                             } else {
 
 
                                 //convertGameIdsToURLs(obj.getGameId()) --- replace argument 1 below with this
-                                mBGGGameAdapter = new BGGGameAdapter(BGGSearchActivity.this, getData(obj.getGameId(), obj.getGameName(), obj.getGameYearPublished(), null));
-                                mRecyclerView = (RecyclerView) findViewById(R.id.recycler_bgg_game);
+                                mBGGGameAdapter = new BGGGameAdapter(getActivity(), getData(obj.getGameId(), obj.getGameName(), obj.getGameYearPublished(), null));
+                                mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_bgg_game);
                                 mRecyclerView.setAdapter(mBGGGameAdapter);
                                 mRecyclerView.getItemAnimator().setSupportsChangeAnimations(false);
                                 mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));

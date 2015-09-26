@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
          * Setup click events on the Navigation View Items.
          */
 
-       // mFragmentManager = getSupportFragmentManager();
+        //mFragmentManager = getSupportFragmentManager();
 
         mNavigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -79,9 +79,10 @@ public class MainActivity extends AppCompatActivity {
                 mDrawerLayout.closeDrawers();
 
                 if (menuItem.getItemId() == R.id.navigation_item_3) {
-//                    FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-//                    fragmentTransaction.replace(R.id.view_pager, new BGGSearchFragment()).addToBackStack("bggSearch" ).commit();
-                    Intent intent = new Intent(MainActivity.this, BGGSearchActivity.class);
+                    //FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+                    //fragmentTransaction.replace(R.id.view_pager, new BGGSearchFragment()).addToBackStack("bggSearch" ).commit();
+                    //Intent intent = new Intent(MainActivity.this, BGGSearchActivity.class);
+                    Intent intent = new Intent(MainActivity.this, BGGActivity.class);
                     startActivity(intent);
                 }
 
