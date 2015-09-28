@@ -288,4 +288,5 @@ public class BGGSearchFragment extends Fragment {
         Thread updateThumbnailThread = new Thread(r);
         updateThumbnailThread.start();
     }
+
 }

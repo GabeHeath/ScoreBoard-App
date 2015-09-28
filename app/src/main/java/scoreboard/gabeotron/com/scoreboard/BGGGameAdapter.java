@@ -2,7 +2,10 @@ package scoreboard.gabeotron.com.scoreboard;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -96,11 +99,8 @@ public class BGGGameAdapter extends RecyclerSwipeAdapter<BGGGameAdapter.MyViewHo
         holder.mSwipeLayout.getSurfaceView().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Toast.makeText(mContext, "Game ID: " + current.gameId, Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(mContext, GameInfoActivity.class);
-                intent.putExtra("id", current.gameId);
-                intent.putExtra("name", current.name);
-                mContext.startActivity(intent);
+                ((BGGActivity) mContext).getDataForGameInfo(current.gameId, current.name);
+                //((BGGActivity) mContext).setCurrentItem(1, true);
             }
         });
 
